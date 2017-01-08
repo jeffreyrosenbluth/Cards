@@ -3,6 +3,15 @@ module Utility where
 import Data.List
 import Types
 
+foldWithOps :: [a -> a -> a] -> [a] -> a -> a
+foldWithOps (o:os) (x:xs) a = foldWithOps os xs (o x a)
+foldWithOps _ _ a = a
+
+
+foldWithOps1 :: [a -> a -> a] -> [a] -> a
+foldWithOps1 os (x:xs) = foldWithOps os xs x
+foldWithOps1 _ [] = error "follWithOps1 cannot be applied to an empty list."
+
 countTrues :: [Bool] -> Int
 countTrues = sum . map fromEnum
 
@@ -37,3 +46,4 @@ qAnd = foldl1' And
 
 qOr :: [Query a] -> Query a
 qOr = foldl1' Or
+

@@ -56,7 +56,7 @@ data Sim = Sim
   { numHands :: Int
   , cardsPerHand :: Int
   , knownCards :: [[Card]]
-  , predicaates :: [Card -> Bool]
+  , predicates :: [Card -> Bool]
   } 
 
 data Query a 
@@ -69,3 +69,6 @@ data Queries a v
   = Q    (Query a) v
   | Qand (Queries a v) (Queries a v)
   | Qor  (Queries a v) (Queries a v)
+
+data Junction = Some | All
+  deriving Eq

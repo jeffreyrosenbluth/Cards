@@ -9,7 +9,7 @@ import System.Random.Shuffle
 
 main :: IO ()
 main = do
-  r <- simulate 10000 sim' (replicate 5 (qAnySuit Spades))  deck
+  r <- simulate 10000 sim2 (replicate 5 (qAnySuit Spades)) (repeat Qand)  deck
   print r
 
 v10  = [ Card Ace Spades
@@ -35,4 +35,4 @@ sim10 = Sim 5 10 [v10] []
 sim2 = Sim 5 10 [v2] [p2]
 
 testDeal :: IO [[Card]]
-testDeal = deal sim' deck
+testDeal = deal sim2 deck

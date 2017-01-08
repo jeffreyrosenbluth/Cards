@@ -38,14 +38,16 @@ deal (Sim m n cs ps) d = do
       go _ _ _ = error "The sky is falling."
   go kcs prds dk
 
+type QF = Queries Card [Card] -> Queries Card [Card] -> Queries Card [Card]
 -- | Simulate and experiment with initializtion record Sim and a list
 --   of queries.
-simulate :: MonadRandom m => Int -> Sim -> [Query Card] -> [Card] -> m Double
-simulate trials sim q d = do
+simulate :: MonadRandom m => Int -> Sim -> [Query Card] -> [QF] -> [Card] -> m Double
+simulate trials sim q js d = do
   let dks = replicate trials d
   hands <- traverse (deal sim) dks
   let qs = makeQueries q <$> hands
-      bs = foldl1' Qand <$> qs
+      bs = foldWithOps1 js <$> qs
+      -- bs = foldl1' (if j == Some then Qor else Qand) <$> qs
       xs = queryDeal <$> bs 
   return $ (fromIntegral $ countTrues xs) / (fromIntegral trials)
   
