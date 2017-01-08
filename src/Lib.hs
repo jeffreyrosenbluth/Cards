@@ -3,26 +3,66 @@ module Lib where
 import Types
 import Utility
 
-import Data.Vector as V
+import Control.Monad.Random
+import Data.List
+import Data.Monoid
+import System.Random.Shuffle
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+deck :: [Card]
+deck = [Card r s | s <- [Clubs .. Spades], r <- [Ace .. King]]
 
-deck52 :: Deck
-deck52 = V.fromList [Card r s | r <- [Ace .. King], s <- [Clubs .. Spades]]
+deckS :: (MonadRandom m) => m [Card]
+deckS = shuffleM deck
 
-deck52s :: IO (Vector Card)
-deck52s = shuffle deck52
+-- | Deal the cards to all of the hands in the game such that each hand
+--   gets is known cards and the remainder satisfy the predicate. The deck
+--   does not have to be shuffled.
+deal :: MonadRandom m => Sim -> [Card] -> m [[Card]]
+deal (Sim m n cs ps) d = do
+  -- Make sure to shuffle after removing all of the fixed cards in each
+  -- hand.
+  dk <- shuffleM (d \\ mconcat cs)
+  -- Use the number of hands to guarantee that the lists of know cards
+  -- and predicates are both of the right length.
+  let kcs = take m $ cs <> repeat []
+      prds = take m $ ps <> repeat (const True)
+      go (x:xs) (q:qs) y = do
+        let (h, d') = fillWithPred y x n q
+        -- Shuffle the remaining cards after they are filtered, otherwise
+        -- the reamining cards will be biased so that the front of the deck
+        -- does not satisfy the predicate.
+        d'' <- shuffleM d'
+        t   <- go xs qs d''
+        return $ h:t
+      go [] [] _ = return []
+      go _ _ _ = error "The sky is falling."
+  go kcs prds dk
 
-suits :: Suit -> Deck -> [Int]
-suits s = foldRanges f 0 [13,26,39,52] 
-  where
-    f a (Card _ t)
-      | s == t = a + 1
-      | otherwise = a
+-- | Simulate and experiment with initializtion record Sim and a list
+--   of queries.
+simulate :: MonadRandom m => Int -> Sim -> [Query Card] -> [Card] -> m Double
+simulate trials sim q d = do
+  let dks = replicate trials d
+  hands <- traverse (deal sim) dks
+  let qs = makeQueries q <$> hands
+      bs = foldl1' Qand <$> qs
+      xs = queryDeal <$> bs 
+  return $ (fromIntegral $ countTrues xs) / (fromIntegral trials)
+  
+--  Predicates ------------------------------------------------------------------
+isSuit :: Suit -> Card -> Bool
+isSuit s c = suit c == s
 
-deal :: Sim -> Deck-> [V.Vector Card]
-deal (Sim _ []) _      = []
-deal (Sim n (c:cs)) d  = h : deal (Sim n cs) d'
-  where
-    (h, d') = fill d c n
+isRank :: Rank -> Card -> Bool
+isRank r c = rank c == r
+
+isPic :: Card -> Bool
+isPic c = isRank Jack c || isRank Queen c || isRank King c
+-------------------------------------------------------------------------------
+
+qAnySuit :: Suit -> Query Card
+qAnySuit s = qOr [Contains [Card r s] | r <- [Ace .. King]]
+
+qAnyRank :: Rank -> Query Card
+qAnyRank r = qOr [Contains [Card r s] | s <- [Clubs .. Spades]]
+-------------------------------------------------------------------------------

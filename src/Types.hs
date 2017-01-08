@@ -2,8 +2,6 @@
 
 module Types where
 
-import qualified Data.Vector as V
-
 data Rank =
     Ace
   | Two
@@ -54,15 +52,20 @@ data Card = Card {rank :: Rank, suit :: Suit}
 instance Show Card where
   show (Card r s) = show r ++ show s
 
-type Deck = V.Vector Card
-
 data Sim = Sim
-  { cardPerHand :: Int
-  , knownCards :: [V.Vector Card]
-  } deriving (Show)
+  { numHands :: Int
+  , cardsPerHand :: Int
+  , knownCards :: [[Card]]
+  , predicaates :: [Card -> Bool]
+  } 
 
 data Query a 
-  = Contains a
+  = Contains [a]
   | Not (Query a)
-  | And (Query a)
-  | Or  (Query a)
+  | And (Query a) (Query a)
+  | Or  (Query a) (Query a)
+
+data Queries a v
+  = Q    (Query a) v
+  | Qand (Queries a v) (Queries a v)
+  | Qor  (Queries a v) (Queries a v)
