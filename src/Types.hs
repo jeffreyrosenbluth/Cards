@@ -55,8 +55,7 @@ instance Show Card where
 data Sim = Sim
   { numHands :: Int
   , cardsPerHand :: Int
-  , knownCards :: [[Card]]
-  , predicates :: [Card -> Bool]
+  , condPreds :: [[Card -> Bool]]
   } 
 
 data Query a 
@@ -70,5 +69,4 @@ data Queries a v
   | Qand (Queries a v) (Queries a v)
   | Qor  (Queries a v) (Queries a v)
 
-data Junction = Some | All
-  deriving Eq
+type QF a = Queries a [a] -> Queries a [a] -> Queries a [a]

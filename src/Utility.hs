@@ -1,7 +1,17 @@
 module Utility where
 
-import Data.List
 import Types
+
+import Control.Monad.Random
+import Data.List
+
+
+randomWithFilter :: MonadRandom m => (a -> Bool) -> [a] -> m a
+randomWithFilter _ [] = error "Cannot choose a random element from an empty list"
+randomWithFilter prd xs = do
+  let xs' = filter prd xs
+  r <- getRandomR (0, length xs' - 1)
+  return $ xs'!! r
 
 foldWithOps :: [a -> a -> a] -> [a] -> a -> a
 foldWithOps (o:os) (x:xs) a = foldWithOps os xs (o x a)
@@ -21,11 +31,25 @@ fill source initial n = (initial ++ rest, source')
   where
     (rest, source') = splitAt (n - length initial) source
 
+-- | Given a source of a\'s, an initial list, and a size n. Create a new
+--   list of length n by appending elements of source that satisfy the predicate
+--   to initial.
 fillWithPred :: Eq a => [a] -> [a] -> Int -> (a -> Bool) -> ([a], [a])
 fillWithPred source initial n prd = (initial ++ rest, source \\ rest)
   where
     yes  = filter prd source
     rest = take (n - length initial) yes
+
+fillWithPreds :: (Eq a, MonadRandom m) => [a] -> Int -> [a -> Bool] -> m [a]
+fillWithPreds _ 0 _  = return []
+fillWithPreds ys m [] = do
+  y <- randomWithFilter (const True) ys
+  t <- fillWithPreds (delete y ys) (m-1) []
+  return $ y:t
+fillWithPreds ys m (p:ps) = do
+  y <- randomWithFilter p ys
+  t <- fillWithPreds (delete y ys) (m-1) ps
+  return $ y:t
 
 queryHand :: Eq a => Query a -> [a] -> Bool
 queryHand (Contains xs) v = all (flip elem v) xs

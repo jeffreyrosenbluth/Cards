@@ -23,7 +23,6 @@ library
                      , tf-random >= 0.5 && < 0.6
                      , primitive >= 0.6 && < 0.7
                      , MonadRandom >= 0.4 && < 0.6
-                     , random-shuffle >= 0.0.4 && < 0.0.5
   default-language:    Haskell2010
   
 executable Cards-exe
@@ -32,7 +31,6 @@ executable Cards-exe
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N -O2
   build-depends:       base
                      , Cards
-                     , random-shuffle >= 0.0.4 && < 0.0.5
   default-language:    Haskell2010
 
 test-suite Cards-test
