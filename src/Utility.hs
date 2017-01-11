@@ -5,6 +5,11 @@ import Types
 import Control.Monad.Random
 import Data.List
 
+randomChoice :: MonadRandom m => [a] -> m a
+randomChoice [] = error "Cannot choose a radnom element from an empty list"
+randomChoice xs = do
+  r <- getRandomR (0, length xs -1)
+  return $ xs !! r
 
 randomWithFilter :: MonadRandom m => (a -> Bool) -> [a] -> m a
 randomWithFilter _ [] = error "Cannot choose a random element from an empty list"
@@ -31,19 +36,11 @@ fill source initial n = (initial ++ rest, source')
   where
     (rest, source') = splitAt (n - length initial) source
 
--- | Given a source of a\'s, an initial list, and a size n. Create a new
---   list of length n by appending elements of source that satisfy the predicate
---   to initial.
-fillWithPred :: Eq a => [a] -> [a] -> Int -> (a -> Bool) -> ([a], [a])
-fillWithPred source initial n prd = (initial ++ rest, source \\ rest)
-  where
-    yes  = filter prd source
-    rest = take (n - length initial) yes
-
+-- 17.8 27
 fillWithPreds :: (Eq a, MonadRandom m) => [a] -> Int -> [a -> Bool] -> m [a]
 fillWithPreds _ 0 _  = return []
 fillWithPreds ys m [] = do
-  y <- randomWithFilter (const True) ys
+  y <- randomChoice ys
   t <- fillWithPreds (delete y ys) (m-1) []
   return $ y:t
 fillWithPreds ys m (p:ps) = do
