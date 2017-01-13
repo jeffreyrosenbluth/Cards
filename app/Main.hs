@@ -6,11 +6,14 @@ import Types
 
 main :: IO ()
 main = do
-  r <- simulate 10000 sim2 (replicate 5 (qAnySuit Spades)) (repeat Qand)
+  r <- simulate simu
   print r
 
+notSpades :: Card -> Bool
 notSpades = not . isSuit Spades
 
+cp :: [[Card -> Bool]]
 cp = [nSuit Spades 2 ++ replicate 8 notSpades]
 
-sim2 = Sim 5 10 cp 
+simu :: Simulation
+simu = Simulation 5 10 10000 cp (replicate 5 (qAnySuit Spades)) (repeat Qand)

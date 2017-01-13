@@ -1,12 +1,12 @@
 module Lib where
 
-import Types
-import Utility
+import           Types
+import           Utility
 
-import Control.Monad
-import Control.Monad.Random
-import Data.List
-import Data.Monoid
+import           Control.Monad
+import           Control.Monad.Random
+import           Data.List
+import           Data.Monoid
 
 -- | Standard 52 card deck.
 deck :: [Card]
@@ -22,10 +22,8 @@ deal m n ps = do
       go [] _ = return []
   go ps' deck
   
-simulate :: MonadRandom m
-          => Int -> Sim -> [Query Card] -> [QF Card]
-          -> m Double
-simulate trials (Sim m n prds) q js  = do
+simulate :: MonadRandom m => Simulation -> m Double
+simulate (Simulation m n trials prds q js) = do
   hands <- replicateM trials $ deal m n prds
   let qs = makeQueries q <$> hands
       bs = foldWithOps1 js <$> qs
@@ -47,6 +45,12 @@ nSuit s n = replicate (min n 13) $ isSuit s
 
 nRank :: Rank -> Int -> [Card -> Bool]
 nRank r n = replicate (min n 4) $ isRank r
+
+mkPred :: CardPred -> Card -> Bool
+mkPred (CardPred (RP r) (SP s)) c= isRank r c && isSuit s c
+mkPred (CardPred (RP r) WildSuit) c = isRank r c
+mkPred (CardPred WildRank (SP s)) c = isSuit s c
+mkPred (CardPred WildRank WildSuit) _ = True
 -------------------------------------------------------------------------------
 qAnySuit :: Suit -> Query Card
 qAnySuit s = qOr [Contains [Card r s] | r <- [Ace .. King]]

@@ -1,9 +1,9 @@
 module Utility where
 
-import Types
+import          Types
 
-import Control.Monad.Random
-import Data.List
+import          Control.Monad.Random
+import          Data.List
 
 randomChoice :: MonadRandom m => [a] -> m a
 randomChoice [] = error "Cannot choose a radnom element from an empty list"
@@ -22,19 +22,12 @@ foldWithOps :: [a -> a -> a] -> [a] -> a -> a
 foldWithOps (o:os) (x:xs) a = foldWithOps os xs (o x a)
 foldWithOps _ _ a = a
 
-
 foldWithOps1 :: [a -> a -> a] -> [a] -> a
 foldWithOps1 os (x:xs) = foldWithOps os xs x
 foldWithOps1 _ [] = error "follWithOps1 cannot be applied to an empty list."
 
 countTrues :: [Bool] -> Int
 countTrues = sum . map fromEnum
-
--- Create a vector of length n by padding the initial with elements of source.
-fill :: [a] -> [a] -> Int -> ([a], [a])
-fill source initial n = (initial ++ rest, source')
-  where
-    (rest, source') = splitAt (n - length initial) source
 
 -- 17.8 27
 fillWithPreds :: (Eq a, MonadRandom m) => [a] -> Int -> [a -> Bool] -> m [a]
