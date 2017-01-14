@@ -19,6 +19,7 @@ library
                      , Types
                      , Utility
                      , DSL
+                     , Compile
   build-depends:       base >= 4.7 && < 5
                      , tf-random >= 0.5 && < 0.6
                      , primitive >= 0.6 && < 0.7

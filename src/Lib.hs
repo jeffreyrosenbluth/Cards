@@ -12,7 +12,7 @@ import           Data.Monoid
 deck :: [Card]
 deck = [Card r s | s <- [Clubs .. Spades], r <- [Ace .. King]]
 
-deal :: MonadRandom m => Int -> Int -> [[SimplePredicate]] -> m [[Card]]
+deal :: MonadRandom m => Int -> Int -> [[CardPredicate]] -> m [[Card]]
 deal m n ps = do
   let ps' = take m $ ps <> replicate (m - length ps) []
       go (q:qs) d = do
@@ -22,36 +22,37 @@ deal m n ps = do
       go [] _ = return []
   go ps' deck
   
-simulate :: MonadRandom m => Simulation -> m Double
-simulate (Simulation m n ts prds q js) = do
+simulate :: MonadRandom m => Simulation -> m Simulation
+simulate s@(Simulation m n ts prds q js rs) = do
   hands <- replicateM ts $ deal m n prds
   let qs = makeQueries q <$> hands
       bs = foldWithOps1 js <$> qs
       xs = queryDeal <$> bs 
-  return $ (fromIntegral $ countTrues xs) / (fromIntegral ts)
+      r  = (fromIntegral $ countTrues xs) / (fromIntegral ts)
+  return $ s {result = r:rs}
   
 --  Predicates ------------------------------------------------------------------
 
-isSuit :: Suit -> SimplePredicate
+isSuit :: Suit -> CardPredicate
 isSuit s c = suit c == s
 
-isRank :: Rank -> SimplePredicate
+isRank :: Rank -> CardPredicate
 isRank r c = rank c == r
 
-isPic :: Card -> Bool
+isPic :: CardPredicate
 isPic c = isRank Jack c || isRank Queen c || isRank King c
 
-nSuit :: Suit -> Int -> [SimplePredicate]
+nSuit :: Suit -> Int -> [CardPredicate]
 nSuit s n = replicate (min n 13) $ isSuit s
 
-nRank :: Rank -> Int -> [SimplePredicate]
+nRank :: Rank -> Int -> [CardPredicate]
 nRank r n = replicate (min n 4) $ isRank r
 
-mkSimplePred :: CardPred -> SimplePredicate
-mkSimplePred (CardPred (RP r) (SP s)) c= isRank r c && isSuit s c
-mkSimplePred (CardPred (RP r) WildSuit) c = isRank r c
-mkSimplePred (CardPred WildRank (SP s)) c = isSuit s c
-mkSimplePred (CardPred WildRank WildSuit) _ = True
+mkCardPred :: CardPattern -> CardPredicate
+mkCardPred (CardPattern (RP r) (SP s)) c= isRank r c && isSuit s c
+mkCardPred (CardPattern (RP r) WildSuit) c = isRank r c
+mkCardPred (CardPattern WildRank (SP s)) c = isSuit s c
+mkCardPred (CardPattern WildRank WildSuit) _ = True
   
 ---------------------------------------------------------------------------------
 

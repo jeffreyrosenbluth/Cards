@@ -52,6 +52,7 @@ statement' = setNumOfHands
          <|> setNumOfCards
          <|> setNumOfTrials
          <|> setPredicate
+         <|> setQuery
          <|> run
 
 setNumOfHands :: Parser Statement
@@ -65,6 +66,9 @@ setNumOfTrials = SetNumOfTrials <$> (symbol "Trials" *> int)
 
 setPredicate :: Parser Statement
 setPredicate = SetPredicate <$> (symbol "Predicate" *> int) <*> baList
+
+setQuery :: Parser Statement
+setQuery = SetQuery <$> (symbol "Query" *> int) <*> baCardPattern
 
 run :: Parser Statement
 run = Run <$ symbol "Run"
@@ -90,8 +94,8 @@ rankParser =
     toRank 'K' = King
     toRank _   = error "Not a valid rank"
 
-rankPredParser :: Parser RankPred
-rankPredParser = RP <$> rankParser <|> WildRank <$ symbol "*"
+rankPatternParser :: Parser RankPattern
+rankPatternParser = RP <$> rankParser <|> WildRank <$ symbol "*"
 
 suitParser :: Parser Suit
 suitParser = toSuit <$> oneOf ['C', 'D', 'H', 'S']
@@ -102,32 +106,32 @@ suitParser = toSuit <$> oneOf ['C', 'D', 'H', 'S']
     toSuit 'S' = Spades
     toSuit _   = error "Not a valid Suit"
     
-suitPredParser :: Parser SuitPred
-suitPredParser =  SP <$> suitParser <|> WildSuit <$ symbol "*"
+suitPatternParser :: Parser SuitPattern
+suitPatternParser =  SP <$> suitParser <|> WildSuit <$ symbol "*"
 
-cardPredParser :: Parser CardPred
-cardPredParser = CardPred <$> rankPredParser <*> lexeme suitPredParser
+cardPatternParser :: Parser CardPattern
+cardPatternParser = CardPattern <$> rankPatternParser <*> lexeme suitPatternParser
 
-baCardPred :: Parser (CardPredAlg)
-baCardPred = makeExprParser term table
+baCardPattern :: Parser (CardPatternAlg)
+baCardPattern = makeExprParser term table
 
-term :: Parser (CardPredAlg)
-term = parens baCardPred <|> Pure <$> cardPredParser 
+term :: Parser (CardPatternAlg)
+term = parens baCardPattern <|> Pure <$> cardPatternParser 
 
-table :: [[Operator Parser (CardPredAlg)]]
+table :: [[Operator Parser (CardPatternAlg)]]
 table = [ [ prefix  "~"  Not ]
         , [ binary  "&&" And
           , binary  "||" Or
           ]
         ]
 
-binary :: String -> (CardPredAlg -> CardPredAlg -> CardPredAlg)
-       -> Operator Parser (CardPredAlg)
+binary :: String -> (CardPatternAlg -> CardPatternAlg -> CardPatternAlg)
+       -> Operator Parser (CardPatternAlg)
 binary name f = InfixL (f <$ symbol name)
 
-prefix :: String -> (CardPredAlg -> CardPredAlg)
-       -> Operator Parser (CardPredAlg)
+prefix :: String -> (CardPatternAlg -> CardPatternAlg)
+       -> Operator Parser (CardPatternAlg)
 prefix name f = Prefix (f <$ symbol name)
 
-baList :: Parser [CardPredAlg]
-baList = symbol "[" *> sepBy1 baCardPred comma <* symbol "]"
+baList :: Parser [CardPatternAlg]
+baList = symbol "[" *> sepBy1 baCardPattern comma <* symbol "]"

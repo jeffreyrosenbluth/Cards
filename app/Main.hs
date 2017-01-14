@@ -7,16 +7,17 @@ import Utility
 
 main :: IO ()
 main = do
-  r <- simulate simu
-  print r
+  s <- simulate simu
+  print (result s)
 
-notSpades :: SimplePredicate
+notSpades :: CardPredicate
 notSpades = not . isSuit Spades
 
-cp :: [[SimplePredicate]]
+cp :: [[CardPredicate]]
 cp = [nSuit Spades 2 ++ replicate 8 notSpades]
 
 simu :: Simulation
 simu = Simulation 5 10 10000 cp
                  (replicate 5 (mkPredicate $ qAnySuit Spades))
                  (repeat Qand)
+                 [0]

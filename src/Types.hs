@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveFunctor #-}
+
 module Types where
 
 data Rank =
@@ -55,6 +57,7 @@ data BoolAlg a
   | Not (BoolAlg a)
   | And (BoolAlg a) (BoolAlg a)
   | Or  (BoolAlg a) (BoolAlg a)
+  deriving Functor
 
 instance (Show a) => Show (BoolAlg a) where
   show (Pure a) = show a
@@ -71,35 +74,37 @@ data Query a v
 
 type QF a = Query a [a] -> Query a [a] -> Query a [a]
 
-data RankPred = RP Rank | WildRank
+data RankPattern = RP Rank | WildRank
   deriving Show
 
-data SuitPred = SP Suit | WildSuit
+data SuitPattern = SP Suit | WildSuit
   deriving Show
   
-data CardPred = CardPred
-  { rankPred :: RankPred
-  , suitPred :: SuitPred
+data CardPattern = CardPattern
+  { rankPattern :: RankPattern
+  , suitPattern :: SuitPattern
   } deriving Show
 
-type SimplePredicate = Predicate Card
+type CardPredicate = Predicate Card
 
 data Simulation = Simulation
   { numOfHands :: Int
   , numOfCards :: Int
   , trials :: Int
-  , predicates :: [[SimplePredicate]]
-  , queries :: [SimplePredicate]
+  , predicates :: [[CardPredicate]]
+  , queries :: [CardPredicate]
   , qOps :: [QF Card]
+  , result :: [Double]
   } 
 
-type CardPredAlg = BoolAlg CardPred
+type CardPatternAlg = BoolAlg CardPattern
 
 data Statement
   = SetNumOfHands Int
   | SetNumOfCards Int
   | SetNumOfTrials Int
-  | SetPredicate Int [CardPredAlg]
+  | SetPredicate Int [CardPatternAlg]
+  | SetQuery Int CardPatternAlg
   | Run
   | Statements [Statement]
   deriving Show
