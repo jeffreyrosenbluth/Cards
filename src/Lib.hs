@@ -55,10 +55,10 @@ mkPred (CardPred WildRank WildSuit) _ = True
   
 ---------------------------------------------------------------------------------
 
-qAnySuit :: Suit -> Query Card
-qAnySuit s = qOr [Pure [Card r s] | r <- [Ace .. King]]
+qAnySuit :: Suit -> BoolAlg (Predicate Card)
+qAnySuit s = Pure (\c -> suit c == s)
 
-qAnyRank :: Rank -> Query Card
-qAnyRank r = qOr [Pure [Card r s] | s <- [Clubs .. Spades]]
+qAnyRank :: Rank -> BoolAlg (Predicate Card)
+qAnyRank r = Pure (\c -> rank c == r)
 
 ---------------------------------------------------------------------------------

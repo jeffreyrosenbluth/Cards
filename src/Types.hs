@@ -49,7 +49,7 @@ data Card = Card {rank :: Rank, suit :: Suit}
 
 instance Show Card where
   show (Card r s) = show r ++ show s
-
+  
 data BoolAlg a
   = Pure a
   | Not (BoolAlg a)
@@ -62,14 +62,14 @@ instance (Show a) => Show (BoolAlg a) where
   show (And a b) = "(" ++ show a ++ " && " ++ show b ++ ")"
   show (Or  a b) = "(" ++ show a ++ " || " ++ show b ++ ")"
 
-type Query a = BoolAlg [a]
+type Predicate a = a -> Bool
   
-data Queries a v
-  = Q    (Query a) v
-  | Qand (Queries a v) (Queries a v)
-  | Qor  (Queries a v) (Queries a v)
+data Query a v
+  = Q    (BoolAlg (Predicate a)) v
+  | Qand (Query a v) (Query a v)
+  | Qor  (Query a v) (Query a v)
 
-type QF a = Queries a [a] -> Queries a [a] -> Queries a [a]
+type QF a = Query a [a] -> Query a [a] -> Query a [a]
 
 data RankPred = RP Rank | WildRank
   deriving Show
@@ -82,12 +82,14 @@ data CardPred = CardPred
   , suitPred :: SuitPred
   } deriving Show
 
+type SimplePredicate = Predicate Card
+
 data Simulation = Simulation
   { numOfHands :: Int
   , numOfCards :: Int
   , trials :: Int
-  , predicates :: [[Card -> Bool]]
-  , queries :: [Query Card]
+  , predicates :: [[SimplePredicate]]
+  , queries :: [BoolAlg SimplePredicate]
   , qOps :: [QF Card]
   } 
 

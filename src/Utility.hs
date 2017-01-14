@@ -41,23 +41,23 @@ fillWithPreds ys m (p:ps) = do
   t <- fillWithPreds (delete y ys) (m-1) ps
   return $ y:t
 
-queryHand :: Eq a => Query a -> [a] -> Bool
-queryHand (Pure xs) v = all (flip elem v) xs
+queryHand :: Eq a => BoolAlg (Predicate a) -> [a] -> Bool
+queryHand (Pure p) v =  any p v
 queryHand (Not q)       v = not $ queryHand q v
 queryHand (And q r)     v = queryHand q v && queryHand r v
 queryHand (Or q r)      v = queryHand q v || queryHand r v
 
-queryDeal :: Eq a => Queries a [a] -> Bool
+queryDeal :: Eq a => Query a [a] -> Bool
 queryDeal (Q q v) = queryHand q v
 queryDeal (Qand q r) = queryDeal q && queryDeal r
 queryDeal (Qor q r)  = queryDeal q || queryDeal r
 
-makeQueries :: [Query a] -> [[a]] -> [Queries a [a]]
+makeQueries :: [BoolAlg (Predicate a)] -> [v] -> [Query a v]
 makeQueries = zipWith Q
 
-qAnd :: [Query a] -> Query a
+qAnd :: [BoolAlg a] -> BoolAlg a
 qAnd = foldl1' And
 
-qOr :: [Query a] -> Query a
+qOr :: [BoolAlg a] -> BoolAlg a
 qOr = foldl1' Or
 
