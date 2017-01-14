@@ -23,12 +23,12 @@ deal m n ps = do
   go ps' deck
   
 simulate :: MonadRandom m => Simulation -> m Double
-simulate (Simulation m n trials prds q js) = do
-  hands <- replicateM trials $ deal m n prds
+simulate (Simulation m n ts prds q js) = do
+  hands <- replicateM ts $ deal m n prds
   let qs = makeQueries q <$> hands
       bs = foldWithOps1 js <$> qs
       xs = queryDeal <$> bs 
-  return $ (fromIntegral $ countTrues xs) / (fromIntegral trials)
+  return $ (fromIntegral $ countTrues xs) / (fromIntegral ts)
   
 --  Predicates ------------------------------------------------------------------
 
