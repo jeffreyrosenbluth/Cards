@@ -1,8 +1,4 @@
-{-# LANGUAGE TemplateHaskell      #-}
-
 module Types where
-
-import Control.Lens (makeLenses, makePrisms)
 
 data Rank =
     Ace
@@ -54,12 +50,20 @@ data Card = Card {rank :: Rank, suit :: Suit}
 instance Show Card where
   show (Card r s) = show r ++ show s
 
-data Query a 
-  = Contains [a]
-  | Not (Query a)
-  | And (Query a) (Query a)
-  | Or  (Query a) (Query a)
+data BoolAlg a
+  = Pure a
+  | Not (BoolAlg a)
+  | And (BoolAlg a) (BoolAlg a)
+  | Or  (BoolAlg a) (BoolAlg a)
 
+instance (Show a) => Show (BoolAlg a) where
+  show (Pure a) = show a
+  show (Not a) = "not " ++ show a
+  show (And a b) = "(" ++ show a ++ " && " ++ show b ++ ")"
+  show (Or  a b) = "(" ++ show a ++ " || " ++ show b ++ ")"
+
+type Query a = BoolAlg [a]
+  
 data Queries a v
   = Q    (Query a) v
   | Qand (Queries a v) (Queries a v)
@@ -69,37 +73,31 @@ type QF a = Queries a [a] -> Queries a [a] -> Queries a [a]
 
 data RankPred = RP Rank | WildRank
   deriving Show
-makePrisms ''RankPred
 
 data SuitPred = SP Suit | WildSuit
   deriving Show
-makePrisms ''SuitPred
   
 data CardPred = CardPred
-  { _rankPred :: RankPred
-  , _suitPred :: SuitPred
+  { rankPred :: RankPred
+  , suitPred :: SuitPred
   } deriving Show
-makeLenses ''CardPred
-
-data BoolAlg a
-  = BA a
-  | BAnot (BoolAlg a)
-  | BAand (BoolAlg a) (BoolAlg a)
-  | BAor  (BoolAlg a) (BoolAlg a)
-
-instance (Show a) => Show (BoolAlg a) where
-  show (BA a) = show a
-  show (BAnot a) = "not " ++ show a
-  show (BAand a b) = "(" ++ show a ++ " && " ++ show b ++ ")"
-  show (BAor  a b) = "(" ++ show a ++ " || " ++ show b ++ ")"
-
 
 data Simulation = Simulation
-  { _numOfHands :: Int
-  , _numOfCards :: Int
-  , _trials :: Int
-  , _predicates :: [[Card -> Bool]]
-  , _queries :: [Query Card]
-  , _qOps :: [QF Card]
+  { numOfHands :: Int
+  , numOfCards :: Int
+  , trials :: Int
+  , predicates :: [[Card -> Bool]]
+  , queries :: [Query Card]
+  , qOps :: [QF Card]
   } 
-makeLenses ''Simulation
+
+type CardPredAlg = BoolAlg CardPred
+
+data Statement
+  = SetNumOfHands Int
+  | SetNumOfCards Int
+  | SetNumOfTrials Int
+  | SetPredicate Int [CardPredAlg]
+  | Run
+  | Statements [Statement]
+  deriving Show

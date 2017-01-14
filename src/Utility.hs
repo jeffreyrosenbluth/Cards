@@ -42,7 +42,7 @@ fillWithPreds ys m (p:ps) = do
   return $ y:t
 
 queryHand :: Eq a => Query a -> [a] -> Bool
-queryHand (Contains xs) v = all (flip elem v) xs
+queryHand (Pure xs) v = all (flip elem v) xs
 queryHand (Not q)       v = not $ queryHand q v
 queryHand (And q r)     v = queryHand q v && queryHand r v
 queryHand (Or q r)      v = queryHand q v || queryHand r v

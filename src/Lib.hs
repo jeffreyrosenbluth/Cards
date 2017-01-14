@@ -31,6 +31,7 @@ simulate (Simulation m n trials prds q js) = do
   return $ (fromIntegral $ countTrues xs) / (fromIntegral trials)
   
 --  Predicates ------------------------------------------------------------------
+
 isSuit :: Suit -> Card -> Bool
 isSuit s c = suit c == s
 
@@ -51,10 +52,13 @@ mkPred (CardPred (RP r) (SP s)) c= isRank r c && isSuit s c
 mkPred (CardPred (RP r) WildSuit) c = isRank r c
 mkPred (CardPred WildRank (SP s)) c = isSuit s c
 mkPred (CardPred WildRank WildSuit) _ = True
--------------------------------------------------------------------------------
+  
+---------------------------------------------------------------------------------
+
 qAnySuit :: Suit -> Query Card
-qAnySuit s = qOr [Contains [Card r s] | r <- [Ace .. King]]
+qAnySuit s = qOr [Pure [Card r s] | r <- [Ace .. King]]
 
 qAnyRank :: Rank -> Query Card
-qAnyRank r = qOr [Contains [Card r s] | s <- [Clubs .. Spades]]
--------------------------------------------------------------------------------
+qAnyRank r = qOr [Pure [Card r s] | s <- [Clubs .. Spades]]
+
+---------------------------------------------------------------------------------
