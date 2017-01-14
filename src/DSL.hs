@@ -8,6 +8,8 @@ import           Text.Megaparsec
 import           Text.Megaparsec.Expr
 import qualified Text.Megaparsec.Lexer     as L
 import           Text.Megaparsec.Text.Lazy
+import           Data.Text.Lazy            (Text)
+
 
 -- Lexer --------------------------------------------------------------------------------
   
@@ -36,6 +38,9 @@ integer = lexeme L.integer
 int :: Parser Int
 int = fromIntegral <$> integer
 
+contents :: Parser a -> Parser a
+contents p = sc *> p <* eof
+
 -- Parser -------------------------------------------------------------------------------
 -- Statements
   
@@ -44,7 +49,6 @@ statement = parens statement <|> statementSeq
 
 statementSeq :: Parser Statement
 statementSeq = f <$> sepBy1 statement' semi
-  -- if there's only one stmt return it without using ‘Seq’
   where f l = if length l == 1 then head l else Statements l
 
 statement' :: Parser Statement
@@ -135,3 +139,6 @@ prefix name f = Prefix (f <$ symbol name)
 
 baList :: Parser [CardPatternAlg]
 baList = symbol "[" *> sepBy1 baCardPattern comma <* symbol "]"
+
+parseStatement :: Text -> Either (ParseError Char Dec) Statement
+parseStatement = parse (contents statement) "<stdin>"
