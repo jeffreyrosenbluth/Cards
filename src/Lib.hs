@@ -12,7 +12,7 @@ import           Data.Monoid
 deck :: [Card]
 deck = [Card r s | s <- [Clubs .. Spades], r <- [Ace .. King]]
 
-deal :: MonadRandom m => Int -> Int -> [[Card -> Bool]] -> m [[Card]]
+deal :: MonadRandom m => Int -> Int -> [[SimplePredicate]] -> m [[Card]]
 deal m n ps = do
   let ps' = take m $ ps <> replicate (m - length ps) []
       go (q:qs) d = do
@@ -32,26 +32,26 @@ simulate (Simulation m n ts prds q js) = do
   
 --  Predicates ------------------------------------------------------------------
 
-isSuit :: Suit -> Card -> Bool
+isSuit :: Suit -> SimplePredicate
 isSuit s c = suit c == s
 
-isRank :: Rank -> Card -> Bool
+isRank :: Rank -> SimplePredicate
 isRank r c = rank c == r
 
 isPic :: Card -> Bool
 isPic c = isRank Jack c || isRank Queen c || isRank King c
 
-nSuit :: Suit -> Int -> [Card -> Bool]
+nSuit :: Suit -> Int -> [SimplePredicate]
 nSuit s n = replicate (min n 13) $ isSuit s
 
-nRank :: Rank -> Int -> [Card -> Bool]
+nRank :: Rank -> Int -> [SimplePredicate]
 nRank r n = replicate (min n 4) $ isRank r
 
-mkPred :: CardPred -> Card -> Bool
-mkPred (CardPred (RP r) (SP s)) c= isRank r c && isSuit s c
-mkPred (CardPred (RP r) WildSuit) c = isRank r c
-mkPred (CardPred WildRank (SP s)) c = isSuit s c
-mkPred (CardPred WildRank WildSuit) _ = True
+mkSimplePred :: CardPred -> SimplePredicate
+mkSimplePred (CardPred (RP r) (SP s)) c= isRank r c && isSuit s c
+mkSimplePred (CardPred (RP r) WildSuit) c = isRank r c
+mkSimplePred (CardPred WildRank (SP s)) c = isSuit s c
+mkSimplePred (CardPred WildRank WildSuit) _ = True
   
 ---------------------------------------------------------------------------------
 

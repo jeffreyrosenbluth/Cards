@@ -11,7 +11,7 @@ randomChoice xs = do
   r <- getRandomR (0, length xs -1)
   return $ xs !! r
 
-randomWithFilter :: MonadRandom m => (a -> Bool) -> [a] -> m a
+randomWithFilter :: MonadRandom m => (Predicate a) -> [a] -> m a
 randomWithFilter _ [] = error "Cannot choose a random element from an empty list"
 randomWithFilter prd xs = do
   let xs' = filter prd xs
@@ -30,7 +30,7 @@ countTrues :: [Bool] -> Int
 countTrues = sum . map fromEnum
 
 -- 17.8 27
-fillWithPreds :: (Eq a, MonadRandom m) => [a] -> Int -> [a -> Bool] -> m [a]
+fillWithPreds :: (Eq a, MonadRandom m) => [a] -> Int -> [Predicate a] -> m [a]
 fillWithPreds _ 0 _  = return []
 fillWithPreds ys m [] = do
   y <- randomChoice ys
@@ -41,19 +41,19 @@ fillWithPreds ys m (p:ps) = do
   t <- fillWithPreds (delete y ys) (m-1) ps
   return $ y:t
 
-queryHand :: Eq a => BoolAlg (Predicate a) -> [a] -> Bool
-queryHand (Pure p) v =  any p v
-queryHand (Not q)       v = not $ queryHand q v
-queryHand (And q r)     v = queryHand q v && queryHand r v
-queryHand (Or q r)      v = queryHand q v || queryHand r v
+mkPredicate :: BoolAlg (Predicate a) -> Predicate a
+mkPredicate (Pure p) = p
+mkPredicate (Not p) = not . mkPredicate p
+mkPredicate (And p q) = \a -> mkPredicate p a && mkPredicate q a
+mkPredicate (Or  p q) = \a -> mkPredicate p a || mkPredicate q a
 
 queryDeal :: Eq a => Query a [a] -> Bool
-queryDeal (Q q v) = queryHand q v
+queryDeal (Q q v) = any q v
 queryDeal (Qand q r) = queryDeal q && queryDeal r
 queryDeal (Qor q r)  = queryDeal q || queryDeal r
 
-makeQueries :: [BoolAlg (Predicate a)] -> [v] -> [Query a v]
-makeQueries = zipWith Q
+makeQueries :: [Predicate a] -> [v] -> [Query a v]
+makeQueries = zipWith Q 
 
 qAnd :: [BoolAlg a] -> BoolAlg a
 qAnd = foldl1' And

@@ -65,7 +65,7 @@ instance (Show a) => Show (BoolAlg a) where
 type Predicate a = a -> Bool
   
 data Query a v
-  = Q    (BoolAlg (Predicate a)) v
+  = Q    (Predicate a) v
   | Qand (Query a v) (Query a v)
   | Qor  (Query a v) (Query a v)
 
@@ -89,7 +89,7 @@ data Simulation = Simulation
   , numOfCards :: Int
   , trials :: Int
   , predicates :: [[SimplePredicate]]
-  , queries :: [BoolAlg SimplePredicate]
+  , queries :: [SimplePredicate]
   , qOps :: [QF Card]
   } 
 
