@@ -72,7 +72,7 @@ data Query a v
   | Qand (Query a v) (Query a v)
   | Qor  (Query a v) (Query a v)
 
-type QF a = Query a [a] -> Query a [a] -> Query a [a]
+type QF a = Query [a] [a] -> Query [a] [a] -> Query [a] [a]
 
 data RankPattern = RP Rank | WildRank
   deriving Show
@@ -86,13 +86,14 @@ data CardPattern = CardPattern
   } deriving Show
 
 type CardPredicate = Predicate Card
+type HandPredicate = Predicate [Card]
 
 data Simulation = Simulation
   { numOfHands :: Int
   , numOfCards :: Int
   , trials :: Int
   , predicates :: [[CardPredicate]]
-  , queries :: [CardPredicate]
+  , queries :: [HandPredicate]
   , qOps :: [QF Card]
   , result :: [Double]
   } 

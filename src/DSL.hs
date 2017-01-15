@@ -48,7 +48,7 @@ statement :: Parser Statement
 statement = parens statement <|> statementSeq
 
 statementSeq :: Parser Statement
-statementSeq = f <$> sepBy1 statement' semi
+statementSeq = f <$> sepEndBy1 statement' semi 
   where f l = if length l == 1 then head l else Statements l
 
 statement' :: Parser Statement

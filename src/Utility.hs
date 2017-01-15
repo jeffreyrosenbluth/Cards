@@ -47,8 +47,8 @@ mkPredicate (Not p) = not . mkPredicate p
 mkPredicate (And p q) = \a -> mkPredicate p a && mkPredicate q a
 mkPredicate (Or  p q) = \a -> mkPredicate p a || mkPredicate q a
 
-queryDeal :: Eq a => Query a [a] -> Bool
-queryDeal (Q q v) = any q v
+queryDeal :: Eq a => Query [a] [a] -> Bool
+queryDeal (Q q v) = q v
 queryDeal (Qand q r) = queryDeal q && queryDeal r
 queryDeal (Qor q r)  = queryDeal q || queryDeal r
 
