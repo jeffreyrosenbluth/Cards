@@ -55,6 +55,16 @@ mkCardPred (CardPattern WildRank WildSuit) _ = True
 atLeastOne :: Suit -> HandsPredicate
 atLeastOne s = all (any $ isSuit s)
 
+hasHighest :: Suit -> HandsPredicate
+hasHighest _ [] = False
+hasHighest s (h:hs) = case filter (isSuit s)  h of
+  [] -> False
+  xs -> (maximum $ map rank xs) > m
+    where
+      m = case filter (isSuit s) (concat hs) of
+        [] -> Two
+        ms -> maximum $ map rank ms
+
   
 ---------------------------------------------------------------------------------
 

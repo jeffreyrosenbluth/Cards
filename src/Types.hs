@@ -3,8 +3,7 @@
 module Types where
 
 data Rank =
-    Ace
-  | Two
+    Two
   | Three
   | Four
   | Five
@@ -16,6 +15,7 @@ data Rank =
   | Jack
   | Queen
   | King
+  | Ace
   deriving (Eq, Ord, Enum)
 
 instance Show Rank where
