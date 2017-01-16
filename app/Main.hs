@@ -18,7 +18,7 @@ main = do
   putStrLn $ "Hands: " ++ show (numOfHands c)
   putStrLn $ "Cards: " ++ show (numOfCards c)
   putStrLn $ "Trials: " ++ show (trials c)
-  let d = c {queries = replicate 5 qSpade, qOps = repeat Qand}
+  let d = c {query = atLeastOne Spades}
   e <- simulate d
   print $ result e
   
@@ -33,8 +33,7 @@ cp = [nSuit Spades 2 ++ replicate 8 notSpades]
 
 simu :: Simulation
 simu = Simulation 5 10 10000 cp
-                 (replicate 5 qSpade)
-                 (repeat Qand)
+                 (atLeastOne Spades)
                  [0]
 
 qSpade :: HandPredicate

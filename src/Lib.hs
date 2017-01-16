@@ -23,13 +23,11 @@ deal m n ps = do
   go ps' deck
   
 simulate :: MonadRandom m => Simulation -> m Simulation
-simulate s@(Simulation m n ts prds q js rs) = do
+simulate s@(Simulation m n ts prds q rs) = do
   hands <- replicateM ts $ deal m n prds
-  let qs = makeQueries q <$> hands
-      bs = foldWithOps1 js <$> qs
-      xs = queryDeal <$> bs 
-      r  = (fromIntegral $ countTrues xs) / (fromIntegral ts)
-  return $ s {result = r:rs}
+  let qs = q <$> hands
+      r  = (fromIntegral $ countTrues qs) / (fromIntegral ts)
+  return $ s {result = rs ++ [r]}
   
 --  Predicates ------------------------------------------------------------------
 
@@ -49,10 +47,14 @@ nRank :: Rank -> Int -> [CardPredicate]
 nRank r n = replicate (min n 4) $ isRank r
 
 mkCardPred :: CardPattern -> CardPredicate
-mkCardPred (CardPattern (RP r) (SP s)) c= isRank r c && isSuit s c
-mkCardPred (CardPattern (RP r) WildSuit) c = isRank r c
-mkCardPred (CardPattern WildRank (SP s)) c = isSuit s c
+mkCardPred (CardPattern (RP r) (SP s)) c     = isRank r c && isSuit s c
+mkCardPred (CardPattern (RP r) WildSuit) c   = isRank r c
+mkCardPred (CardPattern WildRank (SP s)) c   = isSuit s c
 mkCardPred (CardPattern WildRank WildSuit) _ = True
+
+atLeastOne :: Suit -> HandsPredicate
+atLeastOne s = all (any $ isSuit s)
+
   
 ---------------------------------------------------------------------------------
 

@@ -87,14 +87,14 @@ data CardPattern = CardPattern
 
 type CardPredicate = Predicate Card
 type HandPredicate = Predicate [Card]
+type HandsPredicate = Predicate [[Card]]
 
 data Simulation = Simulation
   { numOfHands :: Int
   , numOfCards :: Int
   , trials :: Int
   , predicates :: [[CardPredicate]]
-  , queries :: [HandPredicate]
-  , qOps :: [QF Card]
+  , query :: HandsPredicate
   , result :: [Double]
   } 
 

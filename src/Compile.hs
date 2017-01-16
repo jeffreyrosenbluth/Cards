@@ -7,7 +7,6 @@ import Utility
 import Control.Monad.Random
 
 modify :: [a] -> Int -> a -> [a]
-modify [] 0 y = [y]
 modify [] _ _ = []
 modify xs n y
   | null ts = xs
@@ -18,7 +17,7 @@ modify xs n y
 
 initialSimulation :: Simulation
 initialSimulation =
-  Simulation 0 0 0 (repeat []) [] [] []
+  Simulation 0 0 0 (repeat []) (const False) []
   
 compile :: MonadRandom m => Statement -> Simulation -> m Simulation
 compile (SetNumOfHands n) s = do
